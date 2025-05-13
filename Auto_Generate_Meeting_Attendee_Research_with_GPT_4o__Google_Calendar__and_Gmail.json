@@ -1,0 +1,566 @@
+{
+  "name": "Auto-Generate Meeting Attendee Research with GPT-4o, Google Calendar, and Gmail",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "headerAuth",
+        "requestMethod": "POST",
+        "url": "https://api.openai.com/v1/responses",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={{\n  JSON.stringify({\n    model: \"gpt-4o\",\n    tools: [{ type: \"web_search_preview\" }],\n    input: $json.prompt\n  })\n}}",
+        "headerParametersJson": "{}",
+        "queryParametersJson": "{}"
+      },
+      "id": "78bd2509-83bf-4f4b-8464-0015dd5138bc",
+      "name": "Research Company",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        280,
+        660
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "authentication": "headerAuth",
+        "requestMethod": "POST",
+        "url": "https://api.openai.com/v1/responses",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={{\n  JSON.stringify({\n    model: \"gpt-4o\",\n    tools: [{ type: \"web_search_preview\" }],\n    input: $json.prompt\n  })\n}}",
+        "headerParametersJson": "{}",
+        "queryParametersJson": "{}"
+      },
+      "id": "2b402c2f-40c1-447c-9640-54cb7f9cd8e4",
+      "name": "Research Person",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        620,
+        840
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "calendarId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "youremail@example.com",
+          "cachedResultName": "Your Name Here"
+        },
+        "triggerOn": "eventCreated",
+        "options": {}
+      },
+      "id": "d8686a15-c5e7-4535-956d-26461649eabe",
+      "name": "Google Calendar Trigger",
+      "type": "n8n-nodes-base.googleCalendarTrigger",
+      "position": [
+        -1320,
+        820
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "a45fab6b-2017-4740-a7a2-dfc90bc2eafb",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.self }}",
+              "rightValue": ""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "50cf42c1-7b8a-41f7-85d6-4ed8fc58ed24",
+      "name": "Filter Out Myself",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        -640,
+        820
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "=attendees",
+        "options": {}
+      },
+      "id": "4c0f6ace-8d6d-4bb2-91a8-80803b8f7536",
+      "name": "Split Out Attendees",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        -800,
+        820
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "9adc4d2f-5925-4dc6-a3fe-3567dacd2f6c",
+      "name": "For Each Attendee",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        -360,
+        820
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "2e0ad575-3652-4981-ad78-e76d95880448",
+              "operator": {
+                "type": "string",
+                "operation": "notRegex"
+              },
+              "leftValue": "={{ $('For Each Attendee').item.json.email }}",
+              "rightValue": "@(gmail\\.com|hotmail\\.com|yahoo\\.com|outlook\\.com|icloud\\.com|aol\\.com|live\\.com|msn\\.com|protonmail\\.com|me\\.com|mail\\.com|gmx\\.com|yandex\\.com)"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0da6aec0-51ab-450e-b6c6-f49bd63f1a0d",
+      "name": "Is Company Email?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -60,
+        840
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "id": "79e876c0-3f5b-41c5-be54-37a1b86db3cb",
+      "name": "Combine All Research",
+      "type": "n8n-nodes-base.aggregate",
+      "position": [
+        -60,
+        140
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f4b7dbc5-8f43-4cb7-aa59-508822625152",
+              "name": "person",
+              "type": "string",
+              "value": "={{ $json.output[1].content[0].text }}"
+            },
+            {
+              "id": "28988743-7e98-41c3-a564-0e507f8a69af",
+              "name": "company",
+              "type": "string",
+              "value": "={{ $('For Each Attendee').item.json.email.match(/@(gmail\\.com|hotmail\\.com|yahoo\\.com|outlook\\.com|icloud\\.com|aol\\.com|live\\.com|msn\\.com|protonmail\\.com|me\\.com|mail\\.com|gmx\\.com|yandex\\.com)/) ? 'No company information found.' : $('Research Company').item.json.output[1].content[0].text }}"
+            },
+            {
+              "id": "ed7cc918-4b08-4de8-a21e-7410cfe6b6cb",
+              "name": "email",
+              "type": "string",
+              "value": "={{ $('For Each Attendee').item.json.email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "eca54073-a9e4-45f5-ac94-85505015fcd9",
+      "name": "Collect Fields",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        780,
+        840
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "content": "## 1. New Google Calendar Event Detected\n\nOur workflow is triggered when a new calendar event comes in. \n\nThe event gives us access to a list of attendees which we can loop over in the next step. We need to filter out ourselves if we are in the meeting too!",
+        "height": 700,
+        "width": 880,
+        "color": 7
+      },
+      "id": "2a57b22e-1f72-416a-bd6b-dd8b5f5ff1a6",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1360,
+        500
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 2. Research Attendee + Company\n\nAPI calls are made to the OpenAI Responses API using the new web search preview endpoint. This allows us to search the web for any mentions of each attendee. If the email address is a company email, we also make a search request to find out about the company. We use some context about ourself (in the \"Set Context\" node) so that the LLM can make an educated guess if there are many people with the same name.",
+        "height": 700,
+        "width": 1120,
+        "color": 7
+      },
+      "id": "de0c6c19-f83c-4d73-9896-9bf770f46c72",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -120,
+        500
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 3. Generate + Send Report\n\nFinally, we combine all the data from the meeting attendees into a report. The report gets written in Markdown, converted into HTML, and the send via the Gmail API.",
+        "height": 580,
+        "width": 1120,
+        "color": 7
+      },
+      "id": "042016dc-f50a-43ad-8e21-75e2f4a6ea8b",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -120,
+        -120
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "markdownToHtml",
+        "markdown": "=### Meeting Briefing\n\n{{ \n\n$json.data.reduce((acc, entry, index) => acc + (`\n\n### Person ${index + 1} (${entry.email}):\n\n${entry.person}\n\n### Person ${index + 1} Company:\n\n${entry.company}\n\n---`)\n\n, '').trim().replace(/---$/, '')\n\n}}",
+        "options": {
+          "tables": true
+        }
+      },
+      "id": "10992d30-484d-482d-add1-f114d8901b48",
+      "name": "Write HTML",
+      "type": "n8n-nodes-base.markdown",
+      "position": [
+        120,
+        140
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Edit Here\nEdit a few variables here to get started:\n- **context**: Some information about you to help the web search return the right people. \n- **email**: The email that you want to send the report to.",
+        "height": 200,
+        "width": 310
+      },
+      "id": "3714289f-369f-4956-a4cd-0d1d84f4e64c",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1160,
+        980
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ad442334-0219-4297-91c3-03575920d9b9",
+              "name": "context",
+              "type": "string",
+              "value": "I am working in web development, based in Singapore/Australia, and I work with startups"
+            },
+            {
+              "id": "46cff036-7624-4682-8a22-966a5c46c7b5",
+              "name": "email",
+              "type": "string",
+              "value": "youremail@example.com"
+            },
+            {
+              "id": "c9b83d56-8b24-4767-bc83-0eb0b5f62986",
+              "name": "attendees",
+              "type": "array",
+              "value": "={{ $json.attendees }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9ec2590b-4793-4832-8ede-f760f126e32f",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -1060,
+        820
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Edit Fields').item.json.email }}",
+        "subject": "=Meeting Briefing: {{ $('Google Calendar Trigger').item.json.summary }} ({{ new Date($('Google Calendar Trigger').item.json.start.dateTime).format(\"dd/MM/yyyy\") }})",
+        "message": "={{ $json.data }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "92ae7cbd-94de-454d-b50d-df5568712b41",
+      "name": "Send Report",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        280,
+        140
+      ],
+      "webhookId": "86c63a4a-64e7-41e5-b657-c80b59dce562",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7096cd1e-179c-4230-b869-73f7cb1a9ff9",
+              "name": "prompt",
+              "type": "string",
+              "value": "=I have a call scheduled with {{ $('For Each Attendee').item.json.email }} Please find out as much as you can about the owner of this email address. \n\n- What do they do? \n- What are their interests? \n- What might I not know about them?\n\n{{ $('For Each Attendee').item.json.email.match(/@(gmail\\.com|hotmail\\.com|yahoo\\.com|outlook\\.com|icloud\\.com|aol\\.com|live\\.com|msn\\.com|protonmail\\.com|me\\.com|mail\\.com|gmx\\.com|yandex\\.com)/) ? '' : `Make sure to crawl their company website (http:/$('For Each Attendee').item.json.email.split('@')[1]}) to see if there's anything there.` }} \n\nFor context: {{ $('Edit Fields').item.json.email }}. If there is any ambiguity, use this information to find the most likely person to be meeting with me.\n\nDon't tailor your answer to this context - stay objective about the person only. Make your answer less than 100 words."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c97e9ecd-7cdb-4e4b-9539-a837c3061422",
+      "name": "Person Prompt",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        460,
+        840
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9d1121f3-a5a6-4f73-8726-0a84cad94e77",
+              "name": "prompt",
+              "type": "string",
+              "value": "=Check out the website http://{{ $('For Each Attendee').item.json.email.split(\"@\")[1] }}). \n\n- What does this company do? \n- What problem do they solve? \n- What is their business model? \n\nFor context about me: {{ $('Edit Fields').item.json.context }}.\n\nDon't mention anything about this context in your answer - stay objective about the company. Make your answer less than 100 words. \n\nIf you are unable to find a company at this URL, just write 'Company Not Found'."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6f269644-13d4-461c-b62c-20875525ed97",
+      "name": "Company Prompt",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        120,
+        660
+      ],
+      "typeVersion": 3.4
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Research Company": {
+      "main": [
+        [
+          {
+            "node": "Person Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Person": {
+      "main": [
+        [
+          {
+            "node": "Collect Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Out Myself": {
+      "main": [
+        [
+          {
+            "node": "For Each Attendee",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Attendees": {
+      "main": [
+        [
+          {
+            "node": "Filter Out Myself",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "For Each Attendee": {
+      "main": [
+        [
+          {
+            "node": "Combine All Research",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Is Company Email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Company Email?": {
+      "main": [
+        [
+          {
+            "node": "Company Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Person Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine All Research": {
+      "main": [
+        [
+          {
+            "node": "Write HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Fields": {
+      "main": [
+        [
+          {
+            "node": "For Each Attendee",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write HTML": {
+      "main": [
+        [
+          {
+            "node": "Send Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Split Out Attendees",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Person Prompt": {
+      "main": [
+        [
+          {
+            "node": "Research Person",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Company Prompt": {
+      "main": [
+        [
+          {
+            "node": "Research Company",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c8fdd986-e7a6-4626-9bce-47b6d690e310",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "402b1b975df4b5edf692af4f00b1a88a27528c657bdf47d8f3ac83d12c88a3bc"
+  },
+  "id": "CTxJVEZjGOnGq8Ji",
+  "tags": []
+}

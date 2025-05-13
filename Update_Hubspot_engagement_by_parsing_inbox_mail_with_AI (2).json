@@ -1,0 +1,331 @@
+{
+  "name": "Update Hubspot engagement by parsing inbox mail with AI",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "engagement",
+        "type": "email",
+        "metadata": {
+          "fromEmail": "={{ $('When an email is received').item.json.from }}",
+          "html": "={{ $('When an email is received').item.json.textHtml || $('When an email is received').item.json.textPlain}}",
+          "subject": "={{ $('When an email is received').item.json.subject }}",
+          "toEmail": [
+            "={{ $('When an email is received').item.json.to }}"
+          ]
+        },
+        "additionalFields": {
+          "associations": {
+            "contactIds": "={{ $json.vid }}"
+          }
+        }
+      },
+      "id": "a0fb3795-fb0d-4497-9275-db489a4766a1",
+      "name": "Creates an email engagement",
+      "type": "n8n-nodes-base.hubspot",
+      "position": [
+        1300,
+        280
+      ],
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "44678fd4-8858-4a73-921f-aeb001dd5901",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        240,
+        500
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "search",
+        "filterGroupsUi": {
+          "filterGroupsValues": [
+            {
+              "filtersUi": {
+                "filterValues": [
+                  {
+                    "propertyName": "email|string",
+                    "value": "={{ $json.output.contact_info.email }}"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "id": "1fe8bbca-e40e-43f9-a2f9-0dfff8332b6e",
+      "name": "Search for the contact via email",
+      "type": "n8n-nodes-base.hubspot",
+      "position": [
+        640,
+        280
+      ],
+      "typeVersion": 2.1,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {},
+      "id": "b66f4cf0-bafb-4e43-b39b-89abe9ea97f6",
+      "name": "Parse the mail with AI",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        260,
+        280
+      ],
+      "typeVersion": 1.6
+    },
+    {
+      "parameters": {
+        "options": {
+          "forceReconnect": 3
+        }
+      },
+      "id": "8924905c-8aff-45f2-a94a-1ed10e6aba5b",
+      "name": "When an email is received",
+      "type": "n8n-nodes-base.emailReadImap",
+      "position": [
+        40,
+        280
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "content": "## Set receiving email account\n- Ddefaults to an IMAP account node, but you can put a gmail account or any  email trigger",
+        "height": 300,
+        "width": 280,
+        "color": 4
+      },
+      "id": "a69768cc-e5aa-4aa0-9660-e462ea54331e",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -60,
+        140
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"contact_info\": \n{\n\"first name\": \n\"Thomas\",\n\"last name\": \"Vie\",\n\"position\": \n\"CTO\",\n\"company\": \n\"Pollup Data Services\",\n\"email\": \n\"Thomas@pollup.net\",\n\"phone\": \n\"+34 673626552\",\n\"website\": \n\"https://pollup.net\",\n\"address\": \n{\n\"street\": \n\"Oppelner Str. 32\",\n\"postal_code\": \n\"10997\",\n\"city\": \n\"Berlin\",\n\"country\": \n\"Germany\"\n}}}"
+      },
+      "id": "255d0874-df64-4bbd-b9d9-3237b3ca16d4",
+      "name": "Set the output Json",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        460,
+        500
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "content": "## Upgrade the prompt!\nThis is a very simple prompt but oit does the job. Improve it and send it to me!",
+        "height": 300,
+        "width": 320,
+        "color": 4
+      },
+      "id": "00583f01-d554-4151-b623-b86e5aac4c3e",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        240,
+        140
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Hubspot integration\n- Search for the contact in hubspot\n- If it is present creates an egagement\n- It it is not, creates it and adds an engagement",
+        "height": 400,
+        "width": 840,
+        "color": 4
+      },
+      "id": "5847b65f-ec6e-4607-8ea1-a1445f976b2f",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        580,
+        140
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "554c2aa3-dbdb-4955-8510-6b09bc762f63",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.id }}",
+              "rightValue": ""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "11f06d69-3a4f-45bd-8ef6-b4a8976e7f05",
+      "name": "contact exists?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        860,
+        280
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "75c8fc2d-dc8e-4b6c-a853-1dbd8d72f779",
+              "name": "vid",
+              "type": "string",
+              "value": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "72ce3d7c-06c8-4b7f-b0e1-439bab3931dd",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1080,
+        180
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "email": "={{ $('Parse the mail with AI').item.json.output.contact_info.email }}",
+        "additionalFields": {
+          "city": "={{ $('Parse the mail with AI').item.json.output.contact_info.address.city }}",
+          "companyName": "={{ $('Parse the mail with AI').item.json.output.contact_info.company }}",
+          "country": "={{ $('Parse the mail with AI').item.json.output.contact_info.address.country }}",
+          "jobTitle": "={{ $('Parse the mail with AI').item.json.output.contact_info.position }}",
+          "lastName": "={{ $('Parse the mail with AI').item.json.output.contact_info['last name'] }}",
+          "phoneNumber": "={{ $('Parse the mail with AI').item.json.output.contact_info.phone }}",
+          "postalCode": "={{ $('Parse the mail with AI').item.json.output.contact_info.address.postal_code }}",
+          "streetAddress": "={{ $('Parse the mail with AI').item.json.output.contact_info.address.street }}",
+          "websiteUrl": "={{ $('Parse the mail with AI').item.json.output.contact_info.website }}"
+        },
+        "options": {}
+      },
+      "id": "a5f66e7b-a24a-4295-a6e3-f681422dfae4",
+      "name": "Creates contact",
+      "type": "n8n-nodes-base.hubspot",
+      "position": [
+        1080,
+        380
+      ],
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "content": "## Contact me\n- If you need any modification to this workflow\n- if you need some help with this workflow\n- Or if you need any workflow in n8n, Make, or Langchain / Langgraph\n\nWrite to me: [thomas@pollup.net](mailto:thomas@pollup.net)",
+        "height": 200,
+        "width": 460
+      },
+      "id": "abe26fb1-710f-4d8d-8539-86a459c263e6",
+      "name": "Sticky Note7",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -60,
+        -80
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Search for the contact via email": {
+      "main": [
+        [
+          {
+            "node": "contact exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "contact exists?": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Creates contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Creates an email engagement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Creates contact": {
+      "main": [
+        [
+          {
+            "node": "Creates an email engagement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9a0a3396-56d9-4448-9e1c-4ec42ce61abb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "402b1b975df4b5edf692af4f00b1a88a27528c657bdf47d8f3ac83d12c88a3bc"
+  },
+  "id": "CTxJVEZjGOnGq8Ji",
+  "tags": []
+}

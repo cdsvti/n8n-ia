@@ -1,0 +1,1334 @@
+{
+  "name": "Create a Session-Based Telegram Chatbot with GPT-4o-mini and Google Sheets",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "be3f4cac-0c64-443d-8ef6-1fdb0b451bc4",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        380,
+        2060
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Get session').item.json.SESSION }}",
+        "contextWindowLength": 100
+      },
+      "id": "2442f51b-39c6-4f72-a230-a67039265f4f",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        520,
+        2060
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {},
+      "id": "d6f338cb-b0fa-436f-a335-60b7b3e40a74",
+      "name": "Get message",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "position": [
+        -780,
+        820
+      ],
+      "webhookId": "8d87dcf7-1608-4255-a1f1-03b700a42f0e",
+      "typeVersion": 1.2,
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "955f3c39-0732-4a63-b3f7-70ab0753a68a",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    },
+                    "leftValue": "={{ $('Get message').item.json.message.text }}",
+                    "rightValue": "/new"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "New session"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "790f64bc-f3cc-4ef4-9d43-80853742fee6",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    },
+                    "leftValue": "={{ $('Get message').item.json.message.text }}",
+                    "rightValue": "/current"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Current session"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "39f35352-aee4-4a16-b82f-7f58ab8120f0",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    },
+                    "leftValue": "={{ $('Get message').item.json.message.text }}",
+                    "rightValue": "/resume"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Resume session"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "270d71bf-8ecf-46e7-a601-cc5d1dc58e72",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $('Get message').item.json.message.text }}",
+                    "rightValue": "/summary"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Summary "
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "55fe98fa-e39a-41b3-983f-359a8e730f21",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    },
+                    "leftValue": "={{ $('Get message').item.json.message.text }}",
+                    "rightValue": "/question"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Question"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "1ee14ead-6e45-4ff7-b9e6-88874bde5711",
+      "name": "Command or text?",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        -280,
+        820
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo/edit?usp=drivesdk",
+          "cachedResultName": "Chatbot with session"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": 207843712,
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo/edit#gid=207843712",
+          "cachedResultName": "Session"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "STATE",
+              "lookupValue": "current"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "id": "555c591c-75b5-4719-8331-a51a93c3d1d5",
+      "name": "Get session",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        -520,
+        820
+      ],
+      "typeVersion": 4.5
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo/edit?usp=drivesdk",
+          "cachedResultName": "Chatbot with session"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": 207843712,
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo/edit#gid=207843712",
+          "cachedResultName": "Session"
+        },
+        "columns": {
+          "value": {
+            "STATE": "expire",
+            "SESSION": "={{ $('Get session').item.json.SESSION }}"
+          },
+          "schema": [
+            {
+              "id": "SESSION",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "SESSION",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "STATE",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "STATE",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "type": "string",
+              "display": true,
+              "removed": true,
+              "readOnly": true,
+              "required": false,
+              "displayName": "row_number",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "SESSION"
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "b97f9c86-9790-49db-87fb-d11815698654",
+      "name": "Disable previous session",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        380,
+        120
+      ],
+      "typeVersion": 4.5
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo/edit?usp=drivesdk",
+          "cachedResultName": "Chatbot with session"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": 207843712,
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo/edit#gid=207843712",
+          "cachedResultName": "Session"
+        },
+        "columns": {
+          "value": {
+            "STATE": "current",
+            "SESSION": "={{ $('Get message').item.json.update_id }}"
+          },
+          "schema": [
+            {
+              "id": "SESSION",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "SESSION",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "STATE",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "STATE",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "7bc4bb41-a2b0-480b-806f-74fc85a03d0b",
+      "name": "Set new session",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        700,
+        120
+      ],
+      "typeVersion": 4.5
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Get message').item.json.message.from.id }}",
+        "text": "New session activated",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "6583eb69-136c-484b-84b4-44f5f2199875",
+      "name": "Session activated",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        980,
+        120
+      ],
+      "webhookId": "fa5e7641-068c-40cb-b490-a6809e74c629",
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Get message').item.json.message.from.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "dc6bee94-a011-480f-9ec4-4d89de222ac5",
+      "name": "Send response",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        840,
+        1860
+      ],
+      "webhookId": "fa5e7641-068c-40cb-b490-a6809e74c629",
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo/edit?usp=drivesdk",
+          "cachedResultName": "Chatbot with session"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo/edit#gid=0",
+          "cachedResultName": "Database"
+        },
+        "columns": {
+          "value": {
+            "DATE": "={{$now}}",
+            "PROMPT": "={{ $('Get message').item.json.message.text }}",
+            "SESSION": "={{ $('Get session').item.json.SESSION }}",
+            "RESPONSE": "={{ $('Telegram Chatbot').item.json.output }}"
+          },
+          "schema": [
+            {
+              "id": "SESSION",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "SESSION",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "DATE",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "DATE",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PROMPT",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "PROMPT",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "RESPONSE",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "RESPONSE",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "d1e4cc9d-c5ee-42a2-b3e2-63efe0fcc342",
+      "name": "Update database",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        1160,
+        1860
+      ],
+      "typeVersion": 4.5
+    },
+    {
+      "parameters": {
+        "content": "# Telegram ChatBot with multiple sessions\n\nThis workflow creates an **AI-powered Telegram chatbot** with **session management**, allowing users to:  \n- **Start new conversations** (`/new`).  \n- **Check current sessions** (`/current`).  \n- **Resume past sessions** (`/resume`).  \n- **Get summaries** (`/summary`).  \n- **Ask questions** (`/question`). \n\n- Clone [this sheet](https://docs.google.com/spreadsheets/d/1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo/edit?usp=sharing)",
+        "height": 360,
+        "width": 620,
+        "color": 3
+      },
+      "id": "f97d33e6-ac1b-4d2e-95aa-78a5274d1753",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -800,
+        340
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {
+          "summarizationMethodAndPrompts": {
+            "values": {
+              "combineMapPrompt": "=Write a concise summary of the following:\n\n\n\"{{ $json.fullText }}\"\n\n\nCONCISE SUMMARY:",
+              "prompt": "=Write a concise summary of the following:\n\n\n\"{{ $json.fullText }}\"\n\n\nCONCISE SUMMARY:"
+            }
+          }
+        }
+      },
+      "id": "dc4386fa-455d-4740-8535-baba10fb06fe",
+      "name": "Summarization Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainSummarization",
+      "position": [
+        780,
+        1080
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "c981c965-33d0-41fc-b2ef-d0a7b4e909c1",
+      "name": "OpenAI Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        760,
+        1260
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "2a3f91ef-72fd-49d5-b2c3-0843ad359278",
+      "name": "OpenAI Chat Model2",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        1400,
+        1680
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {},
+      "id": "77146459-d1f0-4b44-af3f-086f38146ef3",
+      "name": "Basic LLM Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        1420,
+        1480
+      ],
+      "typeVersion": 1.6
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "56bf47bc-e84c-4cee-8aa0-927f3d2e31c5",
+              "name": "text",
+              "type": "string",
+              "value": "={{ $('Get message').item.json.message.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "38245974-0258-46b7-992d-64159eb572bd",
+      "name": "Get message1",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        340,
+        780
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo/edit?usp=drivesdk",
+          "cachedResultName": "Chatbot with session"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": 207843712,
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo/edit#gid=207843712",
+          "cachedResultName": "Session"
+        },
+        "columns": {
+          "value": {
+            "STATE": "expire",
+            "SESSION": "={{ $('Get session').item.json.SESSION }}"
+          },
+          "schema": [
+            {
+              "id": "SESSION",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "SESSION",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "STATE",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "STATE",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "type": "string",
+              "display": true,
+              "removed": true,
+              "readOnly": true,
+              "required": false,
+              "displayName": "row_number",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "SESSION"
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "7d00944b-8ab7-4fcf-954c-393181d366e4",
+      "name": "Set to expire",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        780,
+        780
+      ],
+      "typeVersion": 4.5
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "1710e38c-80d1-49ba-9814-2b2c6b3c3b8d",
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json }}",
+              "rightValue": ""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "37dc2776-d65c-4eba-a3e7-b3d75087938e",
+      "name": "Exist?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1280,
+        780
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Get message').item.json.message.from.id }}",
+        "text": "=The current session is {{ $json.SESSION }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "00e42528-9532-497b-9885-de71a4652f0a",
+      "name": "OK",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        1620,
+        840
+      ],
+      "webhookId": "fa5e7641-068c-40cb-b490-a6809e74c629",
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Get message').item.json.message.from.id }}",
+        "text": "=This session doesn't exist",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "3cad9b4a-9dd4-42dd-91a9-159025b995fc",
+      "name": "KO",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        1620,
+        680
+      ],
+      "webhookId": "fa5e7641-068c-40cb-b490-a6809e74c629",
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  const text = item.json.text || '';\n  const match = text.match(/\\/resume\\s+(.*)/);\n\n  if (match) {\n    item.json.resume = match[1].trim();\n  } else {\n    item.json.resume = null; \n  }\n}\n\nreturn $input.all();"
+      },
+      "id": "e21350da-3120-4cff-bda1-d0e715119dbe",
+      "name": "Trim resume",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        560,
+        780
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo/edit?usp=drivesdk",
+          "cachedResultName": "Chatbot with session"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo/edit#gid=0",
+          "cachedResultName": "Database"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "SESSION",
+              "lookupValue": "={{ $('Get session').item.json.SESSION }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9472b3f1-6084-41e2-964b-891f20c1af68",
+      "name": "Get session1",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        340,
+        1080
+      ],
+      "typeVersion": 4.5
+    },
+    {
+      "parameters": {
+        "jsCode": "let fullText = '';\n\nfor (const item of $input.all()) {\n  const prompt = item.json.PROMPT || '';\n  const response = item.json.RESPONSE || '';\n  fullText += `PROMPT: ${prompt}\\nRESPONSE: ${response}\\n`;\n}\nconst chat_id=$('Get message').first().json.message.from.id\n\nreturn [{ json: { fullText, chat_id } }];\n"
+      },
+      "id": "294af92d-28ad-45c1-a304-e5820e9c0285",
+      "name": "Prompt + Resume",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        560,
+        1080
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Prompt + Resume').item.json.chat_id }}",
+        "text": "={{ $json.response.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "c7238a41-6ba7-49a0-acfe-e7671a7b95d3",
+      "name": "Send summary",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        1160,
+        1080
+      ],
+      "webhookId": "fa5e7641-068c-40cb-b490-a6809e74c629",
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "56bf47bc-e84c-4cee-8aa0-927f3d2e31c5",
+              "name": "text",
+              "type": "string",
+              "value": "={{ $('Get message').item.json.message.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6b9a4ed5-7f13-496b-b68d-c3c8c34bd2f9",
+      "name": "Get message2",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        360,
+        1480
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  const text = item.json.text || '';\n  const match = text.match(/\\/question\\s+(.*)/);\n\n  if (match) {\n    item.json.question = match[1].trim();\n  } else {\n    item.json.question = null; // oppure \"\" se preferisci\n  }\n}\n\nreturn $input.all();"
+      },
+      "id": "44fbf04d-21d9-44e2-b5d3-94a454ec332e",
+      "name": "Trim question",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        600,
+        1480
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo/edit?usp=drivesdk",
+          "cachedResultName": "Chatbot with session"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": 207843712,
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo/edit#gid=207843712",
+          "cachedResultName": "Session"
+        },
+        "columns": {
+          "value": {
+            "STATE": "current",
+            "SESSION": "={{ $('Trim resume').item.json.resume }}"
+          },
+          "schema": [
+            {
+              "id": "SESSION",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "SESSION",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "STATE",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "STATE",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "type": "string",
+              "display": true,
+              "removed": true,
+              "readOnly": true,
+              "required": false,
+              "displayName": "row_number",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "SESSION"
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "9291f89a-c529-4b02-9baf-dedffab8e942",
+      "name": "Set new current session",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        1020,
+        780
+      ],
+      "notesInFlow": false,
+      "typeVersion": 4.5,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo/edit?usp=drivesdk",
+          "cachedResultName": "Chatbot with session"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MCJLAqKP0Y7Qr68ZYoSSBeEVyKI1QgAAZnlEiyqkzXo/edit#gid=0",
+          "cachedResultName": "Database"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "SESSION",
+              "lookupValue": "={{ $('Get session').item.json.SESSION }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "326e645e-96ee-4e47-89ab-5323fbb4b3bc",
+      "name": "Response + Text",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        880,
+        1480
+      ],
+      "typeVersion": 4.5
+    },
+    {
+      "parameters": {
+        "jsCode": "let fullText = '';\n\nfor (const item of $input.all()) {\n  const prompt = item.json.PROMPT || '';\n  const response = item.json.RESPONSE || '';\n  fullText += `PROMPT: ${prompt}\\nRESPONSE: ${response}\\n`;\n}\nconst chat_id=$('Get message').first().json.message.from.id;\nconst question=$('Trim question').first().json.question;\n\nreturn [{ json: { fullText, chat_id, question } }];\n"
+      },
+      "id": "b4b8dde6-8e16-4810-a135-77ae8f20026e",
+      "name": "fullText",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1180,
+        1480
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('fullText').item.json.chat_id }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "f6f18df3-3cce-4ce7-816d-df23edde9c4b",
+      "name": "Send answer",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        1820,
+        1480
+      ],
+      "webhookId": "fa5e7641-068c-40cb-b490-a6809e74c629",
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Get message').item.json.message.from.id }}",
+        "text": "=The current session is {{ $('Get session').item.json.SESSION }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "fb300afe-bc6e-4153-8533-847fb8ca4ad6",
+      "name": "Send current session",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        360,
+        440
+      ],
+      "webhookId": "fa5e7641-068c-40cb-b490-a6809e74c629",
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "content": "## NEW SESSION\n",
+        "height": 80,
+        "width": 580
+      },
+      "id": "d9bf555e-65df-4b5e-8f6d-62139045e387",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        380,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## GET CURRENT SESSION\n",
+        "height": 80,
+        "width": 580
+      },
+      "id": "e2ef2d31-6359-48ea-abe8-91302191f85d",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        360,
+        320
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## RESUME SESSION\n",
+        "height": 80,
+        "width": 580
+      },
+      "id": "0b5852e8-f1b1-45f4-a77f-1f012f30df24",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        340,
+        660
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## GET SUMMARY\n",
+        "height": 80,
+        "width": 580
+      },
+      "id": "63f7b3e5-3ab7-40d2-908b-7f21341b83c3",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        340,
+        980
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## SEND QUESTION\n",
+        "height": 80,
+        "width": 580
+      },
+      "id": "0a428a2e-53ea-4a97-b0a4-c19298da6ac9",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        360,
+        1380
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## CHATBOT\n",
+        "height": 80,
+        "width": 580
+      },
+      "id": "4540efda-72f9-4e47-95e0-130fb40bab41",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        380,
+        1740
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "id": "6603802d-413a-46f4-90ab-a8be086e125c",
+      "name": "Telegram Chatbot",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        380,
+        1860
+      ],
+      "typeVersion": 1.9
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Command or text?": {
+      "main": [
+        [
+          {
+            "node": "Disable previous session",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send current session",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get session1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get session": {
+      "main": [
+        [
+          {
+            "node": "Command or text?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Disable previous session": {
+      "main": [
+        [
+          {
+            "node": "Set new session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set new session": {
+      "main": [
+        [
+          {
+            "node": "Session activated",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send response": {
+      "main": [
+        [
+          {
+            "node": "Update database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarization Chain": {
+      "main": [
+        [
+          {
+            "node": "Send summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summarization Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get message1": {
+      "main": [
+        [
+          {
+            "node": "Trim resume",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set to expire": {
+      "main": [
+        [
+          {
+            "node": "Set new current session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exist?": {
+      "main": [
+        [
+          {
+            "node": "KO",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trim resume": {
+      "main": [
+        [
+          {
+            "node": "Set to expire",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get session1": {
+      "main": [
+        [
+          {
+            "node": "Prompt + Resume",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt + Resume": {
+      "main": [
+        [
+          {
+            "node": "Summarization Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get message2": {
+      "main": [
+        [
+          {
+            "node": "Trim question",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trim question": {
+      "main": [
+        [
+          {
+            "node": "Response + Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set new current session": {
+      "main": [
+        [
+          {
+            "node": "Exist?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Response + Text": {
+      "main": [
+        [
+          {
+            "node": "fullText",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8f40a234-df18-4d4c-bea7-1d9556d7ab58",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "402b1b975df4b5edf692af4f00b1a88a27528c657bdf47d8f3ac83d12c88a3bc"
+  },
+  "id": "CTxJVEZjGOnGq8Ji",
+  "tags": []
+}

@@ -1,0 +1,214 @@
+{
+  "name": "Hey, great template! Mind using environment variables instead of using hard coded API keys? This way we can teach uses best secu",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "6407aa57-5158-486d-974a-84cc2de3d51d",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        180,
+        80
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Download video from URL\nThe Gemini API requires binary data, so if your video is in a URL then download it first.",
+        "height": 340,
+        "width": 360,
+        "color": 7
+      },
+      "id": "96fed4eb-06a9-4a8b-b2db-6cfad772e1fc",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        380,
+        -80
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Upload the video to Gemini servers\nBefore Gemini can process the video, it needs to be in their servers to access it.",
+        "height": 340,
+        "width": 360,
+        "color": 7
+      },
+      "id": "a45079be-de9c-41b0-a70b-98637dce1b6d",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        800,
+        -80
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Process the video\nIn this case we're using Gemini 2.0 Flash Experimental to analyze the video. The input will be the video and a prompt, and the response will be some text.",
+        "height": 340,
+        "width": 360,
+        "color": 4
+      },
+      "id": "869b0f34-2eb4-4c27-9dcf-9efe4923786a",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1440,
+        -80
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "id": "fe3606de-95fc-42cc-b77d-999c8b8ff2c2",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        1260,
+        80
+      ],
+      "webhookId": "7d0cd0c0-ce85-4372-b7a5-b0be061fc2b9",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/upload/v1beta/files?key=YOUR_API_KEY_HERE",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Goog-Upload-Command",
+              "value": "start, upload, finalize"
+            },
+            {
+              "name": "X-Goog-Upload-Header-Content-Length",
+              "value": "={{ $binary.data.fileSize }}"
+            },
+            {
+              "name": "X-Goog-Upload-Header-Content-Type",
+              "value": "=video/{{ $binary.data.fileExtension }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "video/mp4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "=data",
+        "options": {}
+      },
+      "id": "b0d3d9b4-4832-4f6c-acfb-396cc979fd8e",
+      "name": "Upload video Gemini2",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        920,
+        80
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "https://video.xx.fbcdn.net/v/t42.1790-2/486669303_1374376907233279_6705641525284840361_n.mp4?_nc_cat=108&ccb=1-7&_nc_sid=c53f8f&_nc_ohc=i9h_FPUplXIQ7kNvgFhVDQ7&_nc_oc=AdmUX26Llq_YE9a04HE5ow8Q4oAOLesAZL-DDmHx2qwwUUufD8MoRiFChHZ56qAAgLA&_nc_zt=28&_nc_ht=video.fclv4-1.fna&_nc_gid=q6f8dQX63Cn0MhzcPNXSbA&oh=00_AYEFQepXPu5clPsaUUqn4QepdtdvMJT2kBgslUG_2muDAQ&oe=67E9096B",
+        "options": {}
+      },
+      "id": "62f36f58-a7d9-4d5d-b7bd-80a15e01ce1f",
+      "name": "Download video2",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        500,
+        80
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=YOUR_API_KEY_HERE",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"contents\": [\n        {\n            \"role\": \"user\",\n            \"parts\": [\n                {\n                    \"fileData\": {\n                        \"fileUri\": \"{{ $json.file.uri }}\",\n                        \"mimeType\": \"{{ $json.file.mimeType }}\"\n                    }\n                },\n                {\n                    \"text\": \"Describe what you see in this video, and what's being said.\"\n                }\n            ]\n        }\n    ],\n    \"generationConfig\": {\n        \"temperature\": 1.4,\n        \"topK\": 40,\n        \"topP\": 0.95,\n        \"maxOutputTokens\": 8192,\n        \"responseModalities\": [\"Text\"]\n    }\n}\n",
+        "options": {}
+      },
+      "id": "2a085340-23e6-4c68-895b-0da54a958e85",
+      "name": "Analyze video Gemini2",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1560,
+        80
+      ],
+      "typeVersion": 4.2
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Download video2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Analyze video Gemini2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload video Gemini2": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download video2": {
+      "main": [
+        [
+          {
+            "node": "Upload video Gemini2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d9d63a7f-dd82-4f27-a72d-a6154921dd85",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "402b1b975df4b5edf692af4f00b1a88a27528c657bdf47d8f3ac83d12c88a3bc"
+  },
+  "id": "CTxJVEZjGOnGq8Ji",
+  "tags": []
+}

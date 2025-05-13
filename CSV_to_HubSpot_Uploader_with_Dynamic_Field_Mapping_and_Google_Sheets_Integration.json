@@ -1,0 +1,1261 @@
+{
+  "name": "CSV to HubSpot Uploader with Dynamic Field Mapping and Google Sheets Integration",
+  "nodes": [
+    {
+      "parameters": {
+        "fieldToSplitOut": "object",
+        "options": {}
+      },
+      "id": "c8ca2a51-c3b7-415a-bd92-d385af5ab9dc",
+      "name": "Split by object",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        1000,
+        860
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "url": "=https://api.hubapi.com/crm/v3/properties/{{ $json.object }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotOAuth2Api",
+        "options": {}
+      },
+      "id": "3938181e-61eb-4706-9f22-0324f2a0d540",
+      "name": "Fetch properties from Hubspot",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1220,
+        860
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\nfor (let result of $json.results) {\n  result.crm_type = $('Split by object').item.json.object;\n  delete result.options\n}\nreturn {results: $json.results};\n\n"
+      },
+      "id": "ee48e7de-a768-41ab-be0f-964f26389d30",
+      "name": "Define crm_type",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1440,
+        860
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "results",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "id": "c0b39625-f657-42ec-9b10-6980e671faaf",
+      "name": "Split results",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        1660,
+        860
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nlet test = []\nlet entry = $input.item.json.results\nreturn {json: entry}\n"
+      },
+      "id": "b8195005-bcc4-4f73-b509-defa26c1e1c1",
+      "name": "Transforms the results",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        2100,
+        860
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1NdvtXADHaSBleSkvVxf6Y6yo3VmHmilLEBuWbrik32w",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NdvtXADHaSBleSkvVxf6Y6yo3VmHmilLEBuWbrik32w/edit?usp=drivesdk",
+          "cachedResultName": "Properties for Hubspot"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NdvtXADHaSBleSkvVxf6Y6yo3VmHmilLEBuWbrik32w/edit#gid=0",
+          "cachedResultName": "Sheet1"
+        },
+        "columns": {
+          "value": {},
+          "schema": [
+            {
+              "id": "updatedAt",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "updatedAt",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "createdAt",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "createdAt",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "name",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "label",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "label",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "type",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "type",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fieldType",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "fieldType",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "description",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "groupName",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "groupName",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "displayOrder",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "displayOrder",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "calculated",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "calculated",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "externalOptions",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "externalOptions",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "hasUniqueValue",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "hasUniqueValue",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "hidden",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "hidden",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "hubspotDefined",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "hubspotDefined",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "formField",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "formField",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "dataSensitivity",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "dataSensitivity",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "crm_type",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "crm_type",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "showCurrencySymbol",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "showCurrencySymbol",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "calculationFormula",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "calculationFormula",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "referencedObjectType",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "referencedObjectType",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "createdUserId",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "createdUserId",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updatedUserId",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "updatedUserId",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "archived",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "archived",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "dateDisplayHint",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "dateDisplayHint",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "options",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "options",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "modificationMetadata",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "modificationMetadata",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "autoMapInputData",
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "useAppend": false
+        }
+      },
+      "id": "a3b1876a-437d-4272-a6c5-6da2455c9716",
+      "name": "Append to Google sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        2320,
+        860
+      ],
+      "typeVersion": 4.5
+    },
+    {
+      "parameters": {
+        "operation": "clear",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1NdvtXADHaSBleSkvVxf6Y6yo3VmHmilLEBuWbrik32w",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NdvtXADHaSBleSkvVxf6Y6yo3VmHmilLEBuWbrik32w/edit?usp=drivesdk",
+          "cachedResultName": "Properties for Hubspot"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NdvtXADHaSBleSkvVxf6Y6yo3VmHmilLEBuWbrik32w/edit#gid=0",
+          "cachedResultName": "Sheet1"
+        }
+      },
+      "id": "baf76429-846c-4939-a1e6-2be8cb61d3d8",
+      "name": "Erase Google sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        560,
+        860
+      ],
+      "typeVersion": 4.5
+    },
+    {
+      "parameters": {
+        "content": "## Update the properties by object Workflow\n",
+        "height": 460,
+        "width": 2280,
+        "color": 7
+      },
+      "id": "cb9624d3-f048-4373-ae35-26439a6e3c4a",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        260,
+        780
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Import workflow\n",
+        "height": 700,
+        "width": 3200,
+        "color": 7
+      },
+      "id": "de2a342f-bb90-4b04-9aa7-54bcd7d35939",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        260,
+        20
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d6c05100-fc13-4969-90e5-bcc398a79006",
+              "name": "object",
+              "type": "array",
+              "value": "[\"companies\",\"contacts\", \"deals\", \"leads\", \"tickets\"]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b45804e7-dab6-46f2-93f2-89008d1bb3af",
+      "name": "Define array of objects",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        780,
+        860
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {},
+      "id": "2e27379d-e253-4002-b01d-fe35ba1e7b37",
+      "name": "Start here to update your field list",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        340,
+        860
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "formTitle": "title",
+        "formDescription": "provide me a file",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "data",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "acceptFileTypes": ".csv",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Type of import",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Companies"
+                  },
+                  {
+                    "option": "Contacts"
+                  },
+                  {
+                    "option": "Leads"
+                  },
+                  {
+                    "option": "Deals"
+                  },
+                  {
+                    "option": "Tickets"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "52441284-06d8-4353-8a5e-ffa1f03cb087",
+      "name": "File upload form",
+      "type": "n8n-nodes-base.formTrigger",
+      "position": [
+        340,
+        340
+      ],
+      "webhookId": "fc3523af-1d0f-4dfb-8869-b29cfdde1a06",
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "id": "4fefdf31-7efc-4844-b64a-3c8f3873c895",
+      "name": "To get the first line of file",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        560,
+        440
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "69a042d8-9543-4a81-bbf8-07e9d7ae2c0d",
+              "name": "real_fields",
+              "type": "array",
+              "value": "={{ $json.data.split(\"\\n\")[0].split(\";\") }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "38310c6b-083e-471e-b510-2301f0bd81ac",
+      "name": "Set the real fields",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        780,
+        440
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1NdvtXADHaSBleSkvVxf6Y6yo3VmHmilLEBuWbrik32w",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NdvtXADHaSBleSkvVxf6Y6yo3VmHmilLEBuWbrik32w/edit?usp=drivesdk",
+          "cachedResultName": "Properties for Hubspot"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NdvtXADHaSBleSkvVxf6Y6yo3VmHmilLEBuWbrik32w/edit#gid=0",
+          "cachedResultName": "Sheet1"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "crm_type",
+              "lookupValue": "={{ $('File upload form').first().json['Type of import'].toLowerCase() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "43a2557a-6768-4a0b-bf6d-b88c88f7a059",
+      "name": "Get the fields from the sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        1220,
+        340
+      ],
+      "typeVersion": 4.5
+    },
+    {
+      "parameters": {},
+      "id": "d9506a26-1a93-4caf-9c5f-325afb1dac06",
+      "name": "Merge fields and data",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        1000,
+        340
+      ],
+      "typeVersion": 3.1
+    },
+    {
+      "parameters": {
+        "jsCode": "// \nlet type = $('File upload form').first().json['Type of import']\n// Get first line of json\nlet first_line = $('Set the real fields').first().json.real_fields\nlet keys = Object.values(first_line)\nlet props = []\n\nfor (let realField of $input.all()) {\n  props.push(realField.json.name)\n}\nlet response = true\nfor (let key of keys) {\n if(!props.includes(key.trim())) {\n    console.log(props, key)\n    response = false\n }\n}\n\nreturn {response, keys, props}"
+      },
+      "id": "61e7c617-ec0a-4a14-ba16-8e59b71e8bf0",
+      "name": "Check if all fields from input are defined",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1440,
+        340
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "3bb457eb-aef5-43f6-b268-1baaad0698e3",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.response }}",
+              "rightValue": ""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f8adf76e-1906-481b-8e1a-14ea3c54c56f",
+      "name": "If all fields are defined",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1660,
+        340
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "jsCode": "\nlet ret = []\nlet fields = {}\nfor (let key of $input.first().json.keys) {\n  if (!$input.first().json.props.includes(key)) {\n    let fieldName = `Set the correct field for '${key}'`\n    fields[fieldName] = key\n    // console.log(key)\n    ret.push(\n      {\n      \"fieldLabel\":key,\n     \"fieldType\": \"dropdown\",\n     \"fieldOptions\": {\n      \"values\": $input.first().json.props.map(x => {return {\"option\": x}})\n\t\t},\n      \"requiredField\":false\n   }\n    )\n  }\n}\n\nreturn {ret, fields}"
+      },
+      "id": "dfd6c4eb-4062-44a3-82c9-33a97e0b3182",
+      "name": "Creates the correspondance table",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1880,
+        440
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "defineForm": "json",
+        "jsonOutput": "={{$json.ret}}",
+        "options": {
+          "formTitle": "=Correspondance for fields",
+          "formDescription": "=Set the correct equivalent for each field.\nYou don't have to do it for all fields."
+        }
+      },
+      "id": "e44ce917-fa53-4ef6-b6f0-6a4e88f58c04",
+      "name": "Form to set the correponding field for each input field",
+      "type": "n8n-nodes-base.form",
+      "position": [
+        2100,
+        440
+      ],
+      "webhookId": "8bdb6e07-1112-4923-a1a3-a0fbb83c806e",
+      "executeOnce": true,
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {
+          "delimiter": ";",
+          "encoding": "utf-8",
+          "headerRow": true
+        }
+      },
+      "id": "ef744a7f-d1b8-4719-9101-a875e02bbe34",
+      "name": "Get the content of file",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        780,
+        240
+      ],
+      "typeVersion": 1,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "content": "## Form uploader\n- Choose  file to import. The CSV file has \",\" as delimiters, is encoded in UTF8 and has the name of the fields as header. You can change all that in \"Get content of the file\"\n- Set the type of object you want to import",
+        "height": 500,
+        "width": 840,
+        "color": 4
+      },
+      "id": "bbacb1e4-0073-41dd-b728-d6a6645b8971",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        300,
+        100
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "out",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "id": "e7ef1e09-6f8a-4997-b96a-c9031076cccd",
+      "name": "Split all records to import",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        2540,
+        340
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bc1ad698-c75a-49e5-843c-03c1c64a21b1",
+              "name": "def.properties",
+              "type": "object",
+              "value": "={{ $json.out }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "71e60bea-9272-4431-82bc-1305e00cca78",
+      "name": "Define properties",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2760,
+        340
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/companies",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.def }}",
+        "options": {}
+      },
+      "id": "3fb42598-bda8-46c9-a687-23d5336902f6",
+      "name": "Uploads to Hubspot",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2980,
+        340
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Your Data has been imported successfully",
+        "options": {
+          "formTitle": ""
+        }
+      },
+      "id": "302b6976-e021-4dee-a315-dd0f8326e6d2",
+      "name": "Form response",
+      "type": "n8n-nodes-base.form",
+      "position": [
+        3200,
+        340
+      ],
+      "webhookId": "980c195f-9ea2-4f38-a869-6ac946b9552d",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "14ed0cde-e546-4b13-9405-16834831a7b4",
+              "operator": {
+                "type": "string",
+                "operation": "notStartsWith"
+              },
+              "leftValue": "={{ $json.results.name }}",
+              "rightValue": "hs_"
+            },
+            {
+              "id": "60337002-8aba-404c-b6e0-99fcd60e1d84",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.results.hidden }}",
+              "rightValue": ""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7afdcf5c-cd94-411e-9293-edd7796b44e5",
+      "name": "Remove hidden and starting with hs_ props fields",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        1880,
+        860
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "content": "## Properties procesor\n- Get the list of properties defined by \"Update the properties by object\" for the choosen object in \"Form uploader\"\n- Check if all fields fro the file have their name in this list\n- If not, go to the correspondance form\n- if yes goes on to processing",
+        "height": 500,
+        "width": 660,
+        "color": 4
+      },
+      "id": "3c9a9e5c-e6ec-4504-9cf5-51e008613ba8",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1160,
+        100
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Set the values for each property\n",
+        "height": 500,
+        "width": 640,
+        "color": 4
+      },
+      "id": "97965c06-f7c2-43e0-a006-c85dd8034050",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1840,
+        100
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "\nfunction findKeyByValue(obj, value) {\n  return Object.keys(obj).find(key => obj[key] === value);\n}\n\nlet out = []\nconst data = $('Get the content of file').all().map(x => x.json)\nconsole.log(data)\n\nfor (const item of data) {\n  console.log(item)\n  let elt = {}\n  \n  for (const prop of $('Check if all fields from input are defined').first().json.props) {\n      elt[prop] = item[prop]\n  }\n\n  out.push(elt)\n}\n\nreturn {out}"
+      },
+      "id": "e87e2a50-97f4-4b0f-bc55-1a962104c6fb",
+      "name": "Set the values for each field",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        2320,
+        240
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "\nfunction findKeyByValue(obj, value) {\n  return Object.keys(obj).find(key => obj[key] === value);\n}\n\nlet out = []\nconst data = $('Get the content of file').all().map(x => x.json)\n// console.log(form_fields)\n\nfor (const item of data) {\n  let elt = {}\n  for (const prop of $('Check if all fields from input are defined').first().json.props) {\n    let equival = findKeyByValue($input.all()[0].json, prop)\n    if(equival) {\n      elt[prop] = item[equival]\n    } else {\n      elt[prop] = item[prop]\n    }\n  }\n  \n  out.push(elt)\n}\n\nreturn {out}"
+      },
+      "id": "3a14fb67-bae3-4406-9c9d-f9bcf96a3c6c",
+      "name": "Set the values for each field1",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        2320,
+        440
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "content": "## Import the values in Hubspot\n",
+        "height": 500,
+        "width": 640,
+        "color": 4
+      },
+      "id": "b78425ae-c897-4435-8c29-f39806dda58c",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2500,
+        100
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Contact me\n- If you need any modification to this workflow\n- if you need some help with this workflow\n- Or if you need any workflow in n8n, Make, or Langchain / Langgraph\n\nWrite to me: [thomas@pollup.net](mailto:thomas@pollup.net)\nCheck out my other templates [here](https://n8n.io/creators/zeerobug/)",
+        "height": 200,
+        "width": 460
+      },
+      "id": "e31f0778-0335-4c6a-83fd-73a1266d86c8",
+      "name": "Sticky Note7",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        260,
+        -200
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n## List of objects\nDefine Here the list of the objects you would like to import in Hubspot",
+        "height": 380,
+        "color": 4
+      },
+      "id": "2c91d0cf-fbfa-4c6e-b38d-ded3c0eb4d7a",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        800,
+        920
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n## Filter the list of properties here",
+        "height": 380,
+        "color": 4
+      },
+      "id": "f97449cd-8ad3-4152-8a0a-9e03121b5241",
+      "name": "Sticky Note8",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1900,
+        920
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n## Create an empty Google Sheet\nIf you run this part, and set it here and in the last node",
+        "height": 380,
+        "width": 200,
+        "color": 4
+      },
+      "id": "7dd42488-01e8-40dc-9bb9-d81505c8c4ce",
+      "name": "Sticky Note9",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        580,
+        920
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Split by object": {
+      "main": [
+        [
+          {
+            "node": "Fetch properties from Hubspot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch properties from Hubspot": {
+      "main": [
+        [
+          {
+            "node": "Define crm_type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Define crm_type": {
+      "main": [
+        [
+          {
+            "node": "Split results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split results": {
+      "main": [
+        [
+          {
+            "node": "Remove hidden and starting with hs_ props fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transforms the results": {
+      "main": [
+        [
+          {
+            "node": "Append to Google sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Erase Google sheet": {
+      "main": [
+        [
+          {
+            "node": "Define array of objects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Define array of objects": {
+      "main": [
+        [
+          {
+            "node": "Split by object",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start here to update your field list": {
+      "main": [
+        [
+          {
+            "node": "Erase Google sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File upload form": {
+      "main": [
+        [
+          {
+            "node": "To get the first line of file",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get the content of file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "To get the first line of file": {
+      "main": [
+        [
+          {
+            "node": "Set the real fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set the real fields": {
+      "main": [
+        [
+          {
+            "node": "Merge fields and data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get the fields from the sheet": {
+      "main": [
+        [
+          {
+            "node": "Check if all fields from input are defined",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge fields and data": {
+      "main": [
+        [
+          {
+            "node": "Get the fields from the sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if all fields from input are defined": {
+      "main": [
+        [
+          {
+            "node": "If all fields are defined",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If all fields are defined": {
+      "main": [
+        [
+          {
+            "node": "Set the values for each field",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Creates the correspondance table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Creates the correspondance table": {
+      "main": [
+        [
+          {
+            "node": "Form to set the correponding field for each input field",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form to set the correponding field for each input field": {
+      "main": [
+        [
+          {
+            "node": "Set the values for each field1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get the content of file": {
+      "main": [
+        [
+          {
+            "node": "Merge fields and data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split all records to import": {
+      "main": [
+        [
+          {
+            "node": "Define properties",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Define properties": {
+      "main": [
+        [
+          {
+            "node": "Uploads to Hubspot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Uploads to Hubspot": {
+      "main": [
+        [
+          {
+            "node": "Form response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove hidden and starting with hs_ props fields": {
+      "main": [
+        [
+          {
+            "node": "Transforms the results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set the values for each field": {
+      "main": [
+        [
+          {
+            "node": "Split all records to import",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set the values for each field1": {
+      "main": [
+        [
+          {
+            "node": "Split all records to import",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "825f69f9-2aab-4faf-bc8e-72ecdeb0b103",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "402b1b975df4b5edf692af4f00b1a88a27528c657bdf47d8f3ac83d12c88a3bc"
+  },
+  "id": "CTxJVEZjGOnGq8Ji",
+  "tags": []
+}

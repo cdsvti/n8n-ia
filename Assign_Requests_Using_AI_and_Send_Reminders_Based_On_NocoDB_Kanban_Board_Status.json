@@ -1,0 +1,863 @@
+{
+  "name": "Assign Requests Using AI and Send Reminders Based On NocoDB Kanban Board Status",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Incident Form",
+        "formDescription": "Experiencing issues? Fill in this incident form so we can take care of it",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "placeholder": "Your Email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Incident Description",
+              "fieldType": "textarea",
+              "placeholder": "Incident Description",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Incident Desired Category",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Critical"
+                  },
+                  {
+                    "option": "Major"
+                  },
+                  {
+                    "option": "Medium"
+                  },
+                  {
+                    "option": "Minor"
+                  },
+                  {
+                    "option": "Support"
+                  },
+                  {
+                    "option": "Feature"
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fe0e836c-b01e-478e-935f-a264e6ec381d",
+      "name": "Incident Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "position": [
+        -240,
+        60
+      ],
+      "webhookId": "fef1bb69-69e9-49ff-ba29-ded7cc398a13",
+      "typeVersion": 2.2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are professional support assistance. You are receiving information about different issues users are having. Your task is to assign proper category to task requested.\n\nYou should output:\n- category based on definitions provided\n- response time assgined to category\n- resolution time assigned to category\n- default assignee\n\nDefinitions:\n{{ $json.data.toJsonString() }}\n\nTask request is:\n{{ $('On schedule or during flow').item.json['Incident Description'] }}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "id": "1bc6a540-2469-40b5-85e5-9d0a3e292c3f",
+      "name": "Assign Category",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        480,
+        -40
+      ],
+      "typeVersion": 1.8,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "fafece28-c85b-451c-aab0-65cff449a4b8",
+      "name": "OpenAI Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        400,
+        140
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"category\": \"critical\",\n  \"response_time\": \"1\",\n  \"resolution_time\": \"8\",\n  \"default_assignee\": \"email@example.com\"\n}"
+      },
+      "id": "faf6ffa0-1a39-49a4-b0c3-4d8a129ef0a6",
+      "name": "Structure Output Todoist Ready1",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        720,
+        120
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "getAll",
+        "projectId": "pksfpoc943gwhvy",
+        "table": "mt94l49b6zocsxy",
+        "returnAll": true,
+        "options": {
+          "fields": [
+            "Title",
+            "Definition",
+            "Response time",
+            "Resolution time",
+            "Default assignee"
+          ]
+        }
+      },
+      "id": "a672a8db-89d0-475d-9918-b5b956560189",
+      "name": "Get incident definitions",
+      "type": "n8n-nodes-base.nocoDb",
+      "position": [
+        40,
+        -40
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "content": "## Incident Form\nThis workflow is triggered when someone fills incident form. You could replace it for example with email or webhook, but you will need to update references in other nodes to new fields",
+        "height": 440
+      },
+      "id": "a832d842-3173-493b-b1a1-c841c005b729",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -300,
+        -140
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Parse Incidents\nAllow AI to compare your incident definitions with input from user. AI will attempt to assign proper category and proper person to given incident. WIth AI assignment, we are formatting fields to input them into NocoDB table",
+        "height": 440,
+        "width": 1320
+      },
+      "id": "138ae5d9-6988-4ca2-8253-7e5afed08136",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -20,
+        -140
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "create",
+        "projectId": "pksfpoc943gwhvy",
+        "table": "mwh33g1yyeg9z6k",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "436d9628-3551-403e-9f78-3f8a6a0ca444",
+      "name": "Insert Incident",
+      "type": "n8n-nodes-base.nocoDb",
+      "position": [
+        1120,
+        120
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "id": "3b702858-c40f-439f-982d-f3cb1eecc99e",
+      "name": "Aggregate for AI parsing",
+      "type": "n8n-nodes-base.aggregate",
+      "position": [
+        260,
+        -40
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "id": "10c5c457-167c-4983-991a-51c8990e9cdd",
+      "name": "On schedule or during flow",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        20,
+        680
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "id": "71e6510b-0d0d-4101-a246-1a20f686c464",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -260,
+        760
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "e860430a-ec94-4dce-9196-5da467e6af2f",
+              "operator": {
+                "type": "dateTime",
+                "operation": "before"
+              },
+              "leftValue": "={{ $json['Expected Response'] }}",
+              "rightValue": "={{ $now }}"
+            },
+            {
+              "id": "278afe7e-2e68-461b-a0fb-baa530cb0819",
+              "operator": {
+                "name": "filter.operator.equals",
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "todo"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fdd19263-36c9-439a-90b7-f32ec88f5f85",
+      "name": "Task is not picked up after expected response",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        520,
+        480
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "fromEmail": "support@example.com",
+        "toEmail": "={{ $json.email }}",
+        "subject": "Your task is important to us",
+        "emailFormat": "text",
+        "text": "We are sorry that we have not yet looked at your message. Although We are working heavily, currently all our developers are busy. But we have reminded asignee on your request and we will reply to you shortly.",
+        "options": {}
+      },
+      "id": "a7f895a1-857d-4bd9-9abd-3a01e4d00ac9",
+      "name": "Send email to client",
+      "type": "n8n-nodes-base.emailSend",
+      "position": [
+        860,
+        400
+      ],
+      "webhookId": "909aaf74-b3ce-4942-9295-0e1f83810c7f",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "a99b5b90-8689-4dde-a624-034189b6ca3c",
+      "name": "Check status every day",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -260,
+        580
+      ],
+      "typeVersion": 1.2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "fromEmail": "support@example.com",
+        "toEmail": "={{ $json.assignee }}",
+        "subject": "Your task is important to us",
+        "emailFormat": "text",
+        "text": "You have an outstanding task that should be picked up. Visit your kanban board for more information ",
+        "options": {}
+      },
+      "id": "68911d00-846a-41f3-81d2-3b452ea753c3",
+      "name": "Send email to asignee",
+      "type": "n8n-nodes-base.emailSend",
+      "position": [
+        1120,
+        500
+      ],
+      "webhookId": "909aaf74-b3ce-4942-9295-0e1f83810c7f",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "content": "## Stay Informed\nInform both client and developer about current task status. Maybe task was not picked up. Feel free to replace with Slack messages if applicable",
+        "height": 400,
+        "width": 1080
+      },
+      "id": "a2eeac03-e5ab-42ac-b583-6695a3369fe2",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        220,
+        320
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "getAll",
+        "projectId": "pksfpoc943gwhvy",
+        "table": "mwh33g1yyeg9z6k",
+        "limit": 5,
+        "options": {
+          "fields": [],
+          "where": "(status,eq,todo)"
+        }
+      },
+      "id": "8a6cec12-5c55-4f26-a7a4-b18764ed60e4",
+      "name": "Get Unpicked Tasks",
+      "type": "n8n-nodes-base.nocoDb",
+      "position": [
+        280,
+        480
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "getAll",
+        "projectId": "pksfpoc943gwhvy",
+        "table": "mwh33g1yyeg9z6k",
+        "limit": 5,
+        "options": {
+          "fields": [],
+          "where": "(status,eq,todo)"
+        }
+      },
+      "id": "dffabe5b-7cd8-479b-8304-1f0327661539",
+      "name": "Get Unfinished Tasks",
+      "type": "n8n-nodes-base.nocoDb",
+      "position": [
+        280,
+        920
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "e860430a-ec94-4dce-9196-5da467e6af2f",
+              "operator": {
+                "type": "dateTime",
+                "operation": "before"
+              },
+              "leftValue": "={{ $json['Expected Resolution'] }}",
+              "rightValue": "={{ $now }}"
+            },
+            {
+              "id": "278afe7e-2e68-461b-a0fb-baa530cb0819",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              },
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "done"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "088b1ac2-f112-439d-8c49-8ab98ad2e1e8",
+      "name": "Task is not complete in expected time",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        520,
+        920
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "fromEmail": "support@example.com",
+        "toEmail": "={{ $json.email }}",
+        "subject": "Your task is important to us",
+        "emailFormat": "text",
+        "text": "We are sorry that we have not yet finished your task. Although We are working heavily, currently all our developers are busy. But we have reminded asignee on your request and we will reply to you shortly.",
+        "options": {}
+      },
+      "id": "6576ea14-9d73-4962-8a03-5a44838ce09f",
+      "name": "Send email to client1",
+      "type": "n8n-nodes-base.emailSend",
+      "position": [
+        860,
+        820
+      ],
+      "webhookId": "909aaf74-b3ce-4942-9295-0e1f83810c7f",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "3e686523-7208-40f8-b857-7db42ccb0e12",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.assignee }}",
+              "rightValue": ""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ef907c6f-151b-4f1f-b484-969b6fbea30f",
+      "name": "If there is asignee email",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        860,
+        580
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "8a70caa3-b692-49c5-a92c-dedff9a8e2ba",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json['assignee slack'] }}",
+              "rightValue": ""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "22cf2e54-8642-460f-9791-95b1fa60af9a",
+      "name": "If there is assignee slack",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        860,
+        1000
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "mode": "username",
+          "value": "={{ $json['assignee slack'] }}"
+        },
+        "text": "You have unfinished task in progress. Inform client on your next steps and update expected resolution time.",
+        "otherOptions": {}
+      },
+      "id": "7a5c244e-8b63-41e2-8e70-af0e4fb97487",
+      "name": "Slack to assignee",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        1120,
+        840
+      ],
+      "webhookId": "2a3764a2-a030-4d99-9dae-0a691934d778",
+      "typeVersion": 2.3
+    },
+    {
+      "parameters": {
+        "content": "## Task incomplete\nInform both client and developer that task is after due. Developer should receive message and react accordingly.",
+        "height": 460,
+        "width": 1080
+      },
+      "id": "b921ff3d-020c-4bd3-a2d7-cb5220574204",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        220,
+        740
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "fromEmail": "support@example.com",
+        "toEmail": "={{ $json.assignee }}",
+        "subject": "Your task is important to us",
+        "emailFormat": "text",
+        "text": "You have an unfninished task that should be done by now. Visit your kanban board for more information ",
+        "options": {}
+      },
+      "id": "d68eadbc-c958-4c84-9606-355dceeb3ed0",
+      "name": "Send another email to asignee",
+      "type": "n8n-nodes-base.emailSend",
+      "position": [
+        1120,
+        1020
+      ],
+      "webhookId": "909aaf74-b3ce-4942-9295-0e1f83810c7f",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Task Check Daily\nRunning this more often is probably not good idea because client may receive too many messages when task is delayed",
+        "height": 580,
+        "width": 480
+      },
+      "id": "868e458e-d210-4e42-9273-1dc420b6a955",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -300,
+        420
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b75b02b8-3365-4830-ad28-87e76836c938",
+              "name": "email",
+              "type": "string",
+              "value": "={{ $('On schedule or during flow').item.json.Email }}"
+            },
+            {
+              "id": "2a0d4d0f-1b1c-40ec-8fb7-f0be9af544f9",
+              "name": "message",
+              "type": "string",
+              "value": "={{ $('On schedule or during flow').item.json['Incident Description'] }}"
+            },
+            {
+              "id": "60fc4759-3026-4d04-9853-b474dbe92d43",
+              "name": "expected category",
+              "type": "string",
+              "value": "={{ $('On schedule or during flow').item.json['Incident Desired Category'] }}"
+            },
+            {
+              "id": "3eccf7ae-f2eb-4997-b304-15428fdf5fb5",
+              "name": "assigned category",
+              "type": "string",
+              "value": "={{ $json.output.category }}"
+            },
+            {
+              "id": "f70e8b0d-4818-405b-ba36-4dc3d31bd11b",
+              "name": "status",
+              "type": "string",
+              "value": "todo"
+            },
+            {
+              "id": "e8ddc64f-d5f0-482e-93d6-a4fd082e3505",
+              "name": "Expected Response",
+              "type": "string",
+              "value": "={{ $now.plus($json.output.response_time, 'hours') }}"
+            },
+            {
+              "id": "be04bc69-e2a6-4c7c-9e94-d39f8b0e4f39",
+              "name": "Expected Resolution",
+              "type": "string",
+              "value": "={{ $now.plus($json.output.resolution_time, 'hours') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a66cbe7a-68a1-4fd6-ac0e-bc02b123e1dd",
+      "name": "Format for Noco",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        900,
+        120
+      ],
+      "typeVersion": 3.4
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Incident Form": {
+      "main": [
+        [
+          {
+            "node": "Get incident definitions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assign Category": {
+      "main": [
+        [
+          {
+            "node": "Format for Noco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Assign Category",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structure Output Todoist Ready1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Assign Category",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get incident definitions": {
+      "main": [
+        [
+          {
+            "node": "Aggregate for AI parsing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Incident": {
+      "main": [
+        [
+          {
+            "node": "On schedule or during flow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate for AI parsing": {
+      "main": [
+        [
+          {
+            "node": "Assign Category",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On schedule or during flow": {
+      "main": [
+        [
+          {
+            "node": "Get Unpicked Tasks",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Unfinished Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "On schedule or during flow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Task is not picked up after expected response": {
+      "main": [
+        [
+          {
+            "node": "Send email to client",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If there is asignee email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check status every day": {
+      "main": [
+        [
+          {
+            "node": "On schedule or during flow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Unpicked Tasks": {
+      "main": [
+        [
+          {
+            "node": "Task is not picked up after expected response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Unfinished Tasks": {
+      "main": [
+        [
+          {
+            "node": "Task is not complete in expected time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Task is not complete in expected time": {
+      "main": [
+        [
+          {
+            "node": "Send email to client1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If there is assignee slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If there is asignee email": {
+      "main": [
+        [
+          {
+            "node": "Send email to asignee",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If there is assignee slack": {
+      "main": [
+        [
+          {
+            "node": "Slack to assignee",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send another email to asignee",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format for Noco": {
+      "main": [
+        [
+          {
+            "node": "Insert Incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d95cff60-aeed-47e8-8cdc-26167291c7fa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "402b1b975df4b5edf692af4f00b1a88a27528c657bdf47d8f3ac83d12c88a3bc"
+  },
+  "id": "CTxJVEZjGOnGq8Ji",
+  "tags": []
+}
